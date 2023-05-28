@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">BookInventory</string>
+    <string name="open_drawer">Open Drawer</string>
 </resources>
