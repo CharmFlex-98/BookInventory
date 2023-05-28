@@ -106,7 +106,8 @@ private val DarkColors = darkColorScheme(
 
 @Composable
 fun BookInventoryTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    // Temporarily set this to light theme only. Dark theme act weird on my phone
+    darkTheme: Boolean = false,
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
