@@ -21,12 +21,15 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.bookinventory.ui.theme.BookInventoryTheme
 import com.bookinventory.ui.theme.appBar.MainPageAppBar
 
@@ -51,30 +54,41 @@ fun BookInventoryApp() {
         MainPageAppBar(title = "Book Inventory") {
         }
     }) {
+        val viewModel: SavedBookListViewModel = viewModel()
+        val uiState: SavedBookListUIState by viewModel.uiState.collectAsStateWithLifecycle()
+
         LazyVerticalGrid(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(it),
             columns = GridCells.Fixed(2),
         ) {
-            items(5) {
-                Card(
-                    modifier = Modifier
-                        .padding(5.dp)
-                        .height(200.dp)
-                        .padding(3.dp),
-                    border = BorderStroke(2.dp, Color.Black),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
-                ) {
-                    Box(modifier = Modifier.fillMaxSize().padding(3.dp), contentAlignment = Alignment.Center) {
-                        Text(
-                            textAlign = TextAlign.Center,
-                            text = "Card view for book info"
-                        )
-                    }
+            if (uiState.isLoading) { }
+            else if (uiState.errorMessage != null) { }// Error UI/ snackbar
+            else {
+                val bookList = uiState.bookList
+                items(bookList.count()) {
+                    Card(
+                        modifier = Modifier
+                            .padding(5.dp)
+                            .height(200.dp)
+                            .padding(3.dp),
+                        border = BorderStroke(2.dp, Color.Black),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+                    ) {
+                        Box(modifier = Modifier
+                            .fillMaxSize()
+                            .padding(3.dp), contentAlignment = Alignment.Center) {
+                            Text(
+                                textAlign = TextAlign.Center,
+                                text = bookList[it].bookName
+                            )
+                        }
 
+                    }
                 }
             }
+
         }
     }
 }
