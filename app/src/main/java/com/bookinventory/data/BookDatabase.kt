@@ -6,7 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.bookinventory.model.Book
 
-@Database(entities = [Book::class], version = 1)
+@Database(entities = [Book::class], version = 1, exportSchema = false)
 abstract class BookDatabase: RoomDatabase() {
 
     companion object {

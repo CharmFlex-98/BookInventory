@@ -1,5 +1,6 @@
 package com.bookinventory
 
+import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -18,18 +19,25 @@ import androidx.compose.material3.CardElevation
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.bookinventory.application.BookApplication
 import com.bookinventory.ui.theme.BookInventoryTheme
 import com.bookinventory.ui.theme.appBar.MainPageAppBar
 
@@ -48,24 +56,38 @@ class MainActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookInventoryApp() {
-    Scaffold(modifier = Modifier
-        .fillMaxSize()
-        .padding(3.dp), topBar = {
-        MainPageAppBar(title = "Book Inventory") {
-        }
-    }) {
-        val viewModel: SavedBookListViewModel = viewModel()
-        val uiState: SavedBookListUIState by viewModel.uiState.collectAsStateWithLifecycle()
+    val snackBarHostState: SnackbarHostState by remember { mutableStateOf(SnackbarHostState()) }
 
-        LazyVerticalGrid(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(it),
-            columns = GridCells.Fixed(2),
-        ) {
-            if (uiState.isLoading) { }
-            else if (uiState.errorMessage != null) { }// Error UI/ snackbar
-            else {
+    Scaffold(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(3.dp), topBar = {
+            MainPageAppBar(title = "Book Inventory") {
+            }
+        }, snackbarHost = { SnackbarHost(hostState = snackBarHostState) }) { padding ->
+        val application: BookApplication =
+            LocalContext.current.applicationContext as BookApplication
+        val viewModel: SavedBookListViewModel = viewModel(factory = BookViewModelProviderFactory {
+            SavedBookListViewModel(application.bookRepository)
+        })
+        val uiState: SavedBookListUIState by viewModel.uiState.collectAsStateWithLifecycle()
+        if (uiState.isLoading) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(text = "loading...")
+            }
+        }
+        else if (uiState.bookList.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(text = "No data")
+            }
+        }
+        else {
+            LazyVerticalGrid(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                columns = GridCells.Fixed(2),
+            ) {
                 val bookList = uiState.bookList
                 items(bookList.count()) {
                     Card(
@@ -76,9 +98,11 @@ fun BookInventoryApp() {
                         border = BorderStroke(2.dp, Color.Black),
                         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
                     ) {
-                        Box(modifier = Modifier
-                            .fillMaxSize()
-                            .padding(3.dp), contentAlignment = Alignment.Center) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(3.dp), contentAlignment = Alignment.Center
+                        ) {
                             Text(
                                 textAlign = TextAlign.Center,
                                 text = bookList[it].bookName
@@ -89,6 +113,13 @@ fun BookInventoryApp() {
                 }
             }
 
+        }
+
+        // Show error message if any
+        LaunchedEffect(key1 = uiState.errorMessage) {
+            uiState.errorMessage?.let {
+                snackBarHostState.showSnackbar(it)
+            }
         }
     }
 }

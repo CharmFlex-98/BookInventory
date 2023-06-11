@@ -14,7 +14,7 @@ interface BookDao {
     fun getAll(): Flow<List<Book>>
 
     @Query("SELECT * FROM book where bookName LIKE :bookName")
-    fun getBookByName(bookName: String)
+    fun getBookByName(bookName: String): Book
 
     @Insert
     fun insertBook(newBook: Book)

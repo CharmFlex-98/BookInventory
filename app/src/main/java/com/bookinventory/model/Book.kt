@@ -9,7 +9,7 @@ import androidx.room.PrimaryKey
 @Entity
 data class Book(
     @PrimaryKey(autoGenerate = true)
-    val id: Double,
+    val id: Long,
     val userId: String = "local_user",
     val bookName: String,
     val bookCategory: BookCategory,
