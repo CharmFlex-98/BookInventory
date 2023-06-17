@@ -1,8 +1,16 @@
 package com.bookinventory.model
+
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
 /*
 * Book data class
 */
+@Entity
 data class Book(
+    @PrimaryKey(autoGenerate = true)
+    val id: Long,
+    val userId: String = "local_user",
     val bookName: String,
     val bookCategory: BookCategory,
     val bookDescription: String,
